@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+const bcrypt =  require('bcrypt');
 const Sequelize = require('sequelize');
 const sequelize = new Sequelize('proyecto0', 'postgres', 'postgres', {
   host: 'localhost',
@@ -13,6 +14,14 @@ const sequelize = new Sequelize('proyecto0', 'postgres', 'postgres', {
     idle: 10000
   }
 });
+
+generateHash = function(pass){
+  return bcrypt.hashSync(pass,bcrypt.genSaltSync(8),null);
+};
+
+validPassword = function(pass,dbpass){
+  return bcrypt.compareSync(pass,dbpass)
+};
 
 sequelize
   .authenticate()
@@ -126,6 +135,7 @@ router.post('/api/signup', (req,res) => {
     }
     //TODO: encriptar pass
     else {
+      password = generateHash(password);
       User.create({
         email:email,
         password:password
@@ -159,23 +169,59 @@ router.post('/api/signin', (req,res) =>{
   User.findOne({
     where:{
       email:email,
-      password:password
     }
   }).then(data => {
     if (data!=null){
-      res.send({
-        success: true,
-        message: 'Valid sign in'
-      });
+      if(!validPassword(password,data.password)){
+        return res.send({
+          success: false,
+          message: 'Error: Invalid'
+        });
+      }
+      else{
+        return res.send({
+          success: true,
+          message: 'Valid sign in'
+        });
+      }
     }
   });
 });
 
 //Eventos reciente->antiguo por usuario
-
+router.post('/api/eventsUser', (req,res) => {
+  const{body} = req;
+  let {user} = body;
+  Event.findAll({
+    attributes:['id','owner','name'],
+    order:[['createdAt','DESC']],
+    where:{
+      owner:user 
+    }
+  }).then(data => {
+    return res.send(data)
+  })
+  .catch((err) => {
+    return res.send(err);
+  });
+})
 
 //Evento detalle
-
+router.post('/api/eventDetail', (req,res) => {
+  const{body} = req;
+  let {user,id} = body;
+  Event.findOne({
+    where:{
+      owner:user,
+      id:id
+    }
+  }).then(data => {
+    return res.send(data)
+  })
+  .catch((err) => {
+    return res.send(err);
+  });
+})
 
 
 //crear evento
@@ -191,6 +237,40 @@ router.post('/api/newEvent', (req,res) =>{
 });
 
 //editar evento
+router.post('/api/eventEdit', (req,res) => {
+  const{body} = req;
+  let {id,owner, name,category,place,address,start_date,end_date,presencial} = body;
+  Event.update({
+    owner,name,category,place,address,start_date,end_date,presencial
+  },
+  {
+    where:{id:id}
+  }).then(data => {
+    return res.send(data)
+  })
+  .catch((err) => {
+    return res.send(err);
+  });
+})
+
 //eliminar evento
+router.post('/api/eventDelete',(req,res) => {
+  const{body} = req;
+  let {id,user} = body;
+  Event.destroy({
+    where: {
+      id: id,
+      owner:user
+    }
+  }).then(data => {
+    console.log(data);
+    return res.send({
+      success: true,
+      message: `Deleted ${data} rows.`
+    });
+  }).catch((err) => {
+    return res.send(err);
+  });
+});
 
 module.exports = router;
