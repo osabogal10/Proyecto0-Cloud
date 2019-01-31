@@ -75,7 +75,7 @@ sequelize
   });
   
   // force: true will drop the table if it already exists
-  User.sync({force: true}).then(() => {
+  User.sync({force: false}).then(() => {
     // Table created
     console.log('Tabla Users')
     /* return User.create({
@@ -84,7 +84,7 @@ sequelize
     }); */
   });
 
-  Event.sync({force: true}).then(() => {
+  Event.sync({force: false}).then(() => {
     /* return Event.create({
       owner:'John1@email.com',
       name:'Proyecto0',
