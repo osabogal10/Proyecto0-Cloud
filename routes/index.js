@@ -171,6 +171,7 @@ router.post('/api/signin', (req,res) =>{
       email:email,
     }
   }).then(data => {
+    console.log(data);
     if (data!=null){
       if(!validPassword(password,data.password)){
         return res.send({
@@ -184,6 +185,12 @@ router.post('/api/signin', (req,res) =>{
           message: 'Valid sign in'
         });
       }
+    }
+    else{
+      return res.send({
+        success:false,
+        message: 'User not registered'
+      })
     }
   });
 });
