@@ -75,7 +75,7 @@ sequelize
   });
   
   // force: true will drop the table if it already exists
-  User.sync({force: false}).then(() => {
+  User.sync({force: true}).then(() => {
     // Table created
     console.log('Tabla Users')
     /* return User.create({
@@ -84,7 +84,7 @@ sequelize
     }); */
   });
 
-  Event.sync({force: false}).then(() => {
+  Event.sync({force: true}).then(() => {
     /* return Event.create({
       owner:'John1@email.com',
       name:'Proyecto0',
@@ -97,9 +97,9 @@ sequelize
     }) */
   });
 
-  User.findByPk('osabogal@gmail.com').then(data => {
+  /* User.findByPk('osabogal@gmail.com').then(data => {
     console.log('Usuarios-------',data);
-  });
+  }); */
 
 /* GET eventos */
 router.get('/api/eventos', function(req, res) {
